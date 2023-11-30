@@ -51,8 +51,12 @@ Write-Output -InputObject "HA NVA timer trigger function executed at:$(Get-Date)
 $VMFW1Name = $env:FW1NAME      # Set the Name of the primary NVA firewall
 $VMFW2Name = $env:FW2NAME      # Set the Name of the secondary NVA firewall
 $FW1RGName = $env:FWRGNAME     # Set the ResourceGroup that contains FW1
-$FW2RGName = $env:FWRGNAME     # Set the ResourceGroup that contains FW2
+$FW2RGName = $env:FWRG2NAME     # Set the ResourceGroup that contains FW2
 $Monitor = $env:FWMONITOR      # "VMStatus" or "TCPPort" are valid values
+
+
+$UDRTGTRGNAME $env:UDRTGTRGNAME #Name of the Target UDR Resource Group
+$UDRTGTNAME $env:UDRTGTNAME     #Name of the Target UDR
 
 #--------------------------------------------------------------------------
 # The parameters below are required if using "TCPPort" mode for monitoring
@@ -115,12 +119,10 @@ Function Start-Failover
     Set-AzureRmContext -SubscriptionId $SubscriptionID
     $RTable = @()
     $TagValue = $env:FWUDRTAG
-    $Res = Find-AzureRmResource -TagName nva_ha_udr -TagValue $TagValue
+        
+    $Table = Get-AzureRmRouteTable -ResourceGroupName $env:UDRTGTRGNAME -Name $UDRTGTNAME
 
-    foreach ($RTable in $Res)
-    {
-      $Table = Get-AzureRmRouteTable -ResourceGroupName $RTable.ResourceGroupName -Name $RTable.Name
-      
+
       foreach ($RouteName in $Table.Routes)
       {
         Write-Output -InputObject "Updating route table..."
@@ -144,7 +146,6 @@ Function Start-Failover
       $UpdateTable = [scriptblock]{param($Table) Set-AzureRmRouteTable -RouteTable $Table}
       &$UpdateTable $Table
 
-    }
   }
 
   Send-AlertMessage -message "NVA Alert: Failover to Secondary FW2"
@@ -159,9 +160,9 @@ Function Start-Failback
     $TagValue = $env:FWUDRTAG
     $Res = Find-AzureRmResource -TagName nva_ha_udr -TagValue $TagValue
 
-    foreach ($RTable in $Res)
-    {
-      $Table = Get-AzureRmRouteTable -ResourceGroupName $RTable.ResourceGroupName -Name $RTable.Name
+          
+    $Table = Get-AzureRmRouteTable -ResourceGroupName $env:UDRTGTRGNAME -Name $UDRTGTNAME
+
 
       foreach ($RouteName in $Table.Routes)
       {
@@ -186,7 +187,7 @@ Function Start-Failback
       $UpdateTable = [scriptblock]{param($Table) Set-AzureRmRouteTable -RouteTable $Table}
       &$UpdateTable $Table 
 
-    }
+    
   }
 
   Send-AlertMessage -message "NVA Alert: Failback to Primary FW1"
