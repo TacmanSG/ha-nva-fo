@@ -55,8 +55,8 @@ $FW2RGName = $env:FWRG2NAME     # Set the ResourceGroup that contains FW2
 $Monitor = $env:FWMONITOR      # "VMStatus" or "TCPPort" are valid values
 
 
-$UDRTGTRGNAME $env:UDRTGTRGNAME #Name of the Target UDR Resource Group
-$UDRTGTNAME $env:UDRTGTNAME     #Name of the Target UDR
+$UDRTGTRGNAME = $env:UDRTGTRGNAME #Name of the Target UDR Resource Group
+$UDRTGTNAME = $env:UDRTGTNAME     #Name of the Target UDR
 
 #--------------------------------------------------------------------------
 # The parameters below are required if using "TCPPort" mode for monitoring
